@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mafort Heavy</title>
+<meta name="theme-color" content="#121416">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mafort Heavy">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F3F1EC; --surface:#FFFFFF; --line:#DDD9D0; --text:#1A1C1E; --muted:#6B7078;
+  --accent:#B0782A; --accent-ink:#FFFFFF; --done:#2F7D4F; --chip:#ECE8E0; --b:#3D6B9E;
+  --timer-bg:#1A1C1E; --timer-fg:#F3F1EC;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121416; --surface:#1C1F22; --line:#2B2F34; --text:#EDE9E1; --muted:#8E9399;
+    --accent:#D8A24A; --accent-ink:#121416; --done:#5DBE7F; --chip:#25292E; --b:#6FA0D8;
+    --timer-bg:#EDE9E1; --timer-fg:#121416;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121416; --surface:#1C1F22; --line:#2B2F34; --text:#EDE9E1; --muted:#8E9399;
+  --accent:#D8A24A; --accent-ink:#121416; --done:#5DBE7F; --chip:#25292E; --b:#6FA0D8;
+  --timer-bg:#EDE9E1; --timer-fg:#121416;
+}
+*{box-sizing:border-box}
+body{margin:0;padding-top:env(safe-area-inset-top);background:var(--bg);color:var(--text);font-family:"Barlow",system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px 64px}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif}
+.num{font-variant-numeric:tabular-nums}
+button{font-family:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{padding:22px 0 12px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{margin:2px 0 0;font-size:40px;line-height:.95;font-weight:700;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+h1 span{color:var(--accent)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:14px;color:var(--muted)}
+.meta b{color:var(--text);font-weight:600}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--chip);border-radius:10px;padding:3px;margin-top:16px}
+.tabs button{border:0;background:transparent;color:var(--muted);font-weight:600;font-size:14px;padding:9px 6px;border-radius:8px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+
+/* workout switch */
+.wsel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.wsel button{border:2px solid var(--line);background:var(--surface);color:var(--muted);border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer}
+.wsel button b{display:block;font-size:22px;line-height:1;color:var(--text);text-transform:uppercase}
+.wsel button span{display:block;font-size:12.5px;margin-top:4px}
+.wsel button[aria-pressed="true"]{border-color:var(--accent)}
+.wsel button[aria-pressed="true"] b{color:var(--accent)}
+
+/* progress */
+.progress{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line)}
+.prow{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted)}
+.prow b{color:var(--text);font-size:15px}
+.bar{height:5px;background:var(--chip);border-radius:3px;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.next{margin-top:8px;font-size:13px;color:var(--muted);display:grid;gap:2px}
+.next b{color:var(--text);font-weight:600}
+.timer{display:none;margin-top:10px;background:var(--timer-bg);color:var(--timer-fg);border-radius:12px;padding:10px 14px;align-items:center;gap:12px}
+.timer.on{display:flex}
+.timer .t{font-size:34px;font-weight:700;line-height:1;min-width:88px}
+.timer .l{font-size:12px;text-transform:uppercase;letter-spacing:.1em;opacity:.7}
+.timer .x{margin-left:auto;background:transparent;border:1px solid currentColor;color:inherit;border-radius:8px;padding:6px 10px;font-weight:600;font-size:13px;cursor:pointer}
+.timer.done{background:var(--accent);color:var(--accent-ink)}
+@keyframes flash{50%{opacity:.35}}
+.timer.done .t{animation:flash .5s 10}
+
+/* blocks */
+section.block{margin-top:22px}
+.bhead{display:flex;align-items:baseline;gap:10px;padding-bottom:6px;border-bottom:2px solid var(--text)}
+.bhead .k{font-size:13px;font-weight:600;letter-spacing:.14em;color:var(--accent)}
+.bhead h2{margin:0;font-size:24px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.bhead .est{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
+.bsub{font-size:13px;color:var(--muted);margin:6px 0 4px}
+.pair{margin-top:10px;border-left:3px solid var(--accent);padding-left:12px}
+.pair .pl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-top:8px}
+.ex{padding:12px 0;border-bottom:1px solid var(--line)}
+.pair .ex:last-child,.single:last-child{border-bottom:0}
+.exh{display:flex;align-items:baseline;gap:8px}
+.exh .id{font-size:13px;font-weight:600;color:var(--muted);width:24px;flex:none}
+.exh .n{font-size:20px;font-weight:600;line-height:1.1;flex:1}
+.yt{flex:none;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);text-decoration:none;border:1px solid var(--accent);border-radius:999px;padding:3px 9px;line-height:1.2;align-self:center}
+.yt:active{background:var(--accent);color:var(--accent-ink)}
+.rx{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 0 32px;font-size:14px;color:var(--muted)}
+.rx b{color:var(--text);font-weight:600}
+.note{margin:6px 0 0 32px;font-size:13.5px;color:var(--muted)}
+.sets{display:flex;align-items:center;gap:8px;margin:10px 0 0 32px}
+.set{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--surface);color:var(--muted);font-weight:600;font-size:15px;cursor:pointer;display:grid;place-items:center}
+.set.on{background:var(--done);border-color:var(--done);color:#fff}
+.load{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:13px;color:var(--muted)}
+.load input{width:56px;padding:7px 6px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font-weight:600;font-size:15px;font-family:inherit;text-align:right}
+
+/* keys */
+.keys{margin-top:28px;display:grid;gap:10px}
+.keys h2{margin:0 0 2px;font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.key{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.key b{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.key p{margin:0;font-size:14px}
+
+/* sound panel */
+.snd{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.snd h3{margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.snd .row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.snd input[type=range]{flex:1;accent-color:var(--accent)}
+.snd .v{width:44px;text-align:right;font-weight:600}
+.snd button{border:1px solid var(--line);background:transparent;color:var(--text);font-weight:600;font-size:13px;padding:7px 12px;border-radius:8px;cursor:pointer}
+.snd button[aria-pressed="false"]{color:var(--muted)}
+.snd p{margin:8px 0 0;font-size:12.5px;color:var(--muted)}
+
+/* agenda */
+.ag{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.ag h3{margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.ag .row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.ag button{border:1px solid var(--line);background:transparent;color:var(--text);font-weight:600;font-size:13px;padding:7px 12px;border-radius:8px;cursor:pointer}
+.ag button[aria-pressed="false"]{color:var(--muted)}
+.ag p{margin:8px 0 0;font-size:12.5px;color:var(--muted)}
+.ag p.err{color:#C0392B}
+.ytbtn{display:inline-block;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:600;font-size:13px;padding:8px 12px;border-radius:8px}
+
+/* history */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px}
+.stat b{display:block;font-size:34px;line-height:1;font-weight:700}
+.stat b small{font-size:16px;color:var(--muted);font-weight:600}
+.stat span{display:block;margin-top:4px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cal{margin-top:22px}
+.calh{display:flex;align-items:center;justify-content:space-between}
+.calh h2{margin:0;font-size:22px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.calh .nav button{border:1px solid var(--line);background:var(--surface);color:var(--text);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:18px;line-height:1}
+.calh .nav button+button{margin-left:6px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
+.dow{text-align:center;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-bottom:4px}
+.day{aspect-ratio:1;border-radius:50%;border:0;background:transparent;color:var(--text);font-weight:500;font-size:15px;cursor:pointer;display:grid;place-items:center;position:relative}
+.day.pad{visibility:hidden}
+.day.today{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.day.A{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.day.B{background:var(--b);color:#fff;font-weight:600}
+.day.future{color:var(--muted);opacity:.5}
+.legend{display:flex;gap:14px;margin-top:8px;font-size:12.5px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.calnote{margin-top:8px;font-size:12.5px;color:var(--muted)}
+.months{margin-top:22px}
+.months h2{margin:0 0 6px;font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.mrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.mrow .mn{width:84px;color:var(--muted)}
+.mrow .mb{flex:1;height:6px;background:var(--chip);border-radius:3px;overflow:hidden;display:flex}
+.mrow .mb i{display:block;height:100%}
+.mrow .mv{width:96px;text-align:right;font-weight:600}
+.mrow .mv small{color:var(--muted);font-weight:500}
+.empty{padding:14px 0;color:var(--muted);font-size:14px}
+
+.foot{margin-top:24px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.foot button{border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:600;font-size:13px;padding:8px 12px;border-radius:8px;cursor:pointer}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Treino AB · atualizado 09 set 2026</div>
+  <h1 class="cond">Mafort <span>Heavy</span></h1>
+  <div class="meta"><span><b>4×</b> semana</span><span><b>2×</b> superiores · <b>2×</b> inferiores</span><span><b>mín. 48h</b> por grupo</span><span><b>≤ 45</b> min</span></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tabTreino" aria-selected="true">Treino</button>
+    <button role="tab" id="tabHist" aria-selected="false">Histórico</button>
+  </div>
+</header>
+
+<div id="viewTreino">
+<div class="wsel" role="group" aria-label="Treino do dia">
+  <button id="wA" aria-pressed="true"><b class="cond">A · Superiores</b><span>22 séries · ≈ 40 min</span></button>
+  <button id="wB" aria-pressed="false"><b class="cond">B · Inferiores</b><span>19 séries · ≈ 38 min</span></button>
+</div>
+
+<div class="progress">
+  <div class="prow"><span id="todayLbl">Hoje</span><span class="num"><b id="pd">0</b> / <span id="pt">0</span> séries</span></div>
+  <div class="bar"><i id="pbar"></i></div>
+  <div class="next" id="next"></div>
+  <div class="timer" id="timer" aria-live="polite">
+    <div class="t num cond" id="tval">90</div>
+    <div class="l" id="tlab">descanso</div>
+    <button class="x" id="tstop">Pular</button>
+  </div>
+</div>
+
+<main id="plan"></main>
+
+<div class="keys">
+  <h2 class="cond">Regras</h2>
+  <div class="key"><b>Progressão dupla</b><p>Fechou o topo da faixa em todas as séries? Sobe a carga no próximo treino e volta ao piso da faixa. Anote a carga no campo kg.</p></div>
+  <div class="key"><b>Perto da falha</b><p>1–2 repetições na reserva; a última série de cada exercício até a falha. Excêntrica de 2–3s nos compostos.</p></div>
+  <div class="key"><b>Superséries</b><p>Nos pares, faz o primeiro, faz o segundo, descansa, repete. O timer dispara ao marcar a série do segundo exercício.</p></div>
+  <div class="key"><b>Recuperação</b><p>Mínimo de 48h entre dois treinos do mesmo grupo. Superior e inferior em dias seguidos é normal. Deload a cada 6–8 semanas: metade das séries, mesma carga.</p></div>
+</div>
+
+<div class="snd">
+  <h3>Alerta de descanso</h3>
+  <div class="row"><button id="sound" aria-pressed="true">Som: ligado</button><button id="test">Testar</button></div>
+  <div class="row"><span style="font-size:13px;color:var(--muted)">Volume</span><input type="range" id="vol" min="10" max="100" step="5" value="90" aria-label="Volume do alerta"><span class="v num" id="volv">90%</span></div>
+  <p>Bipe de cronômetro por 5 segundos, mais vibração. No iPhone, o som só toca com a chave lateral fora do modo silencioso; no Android, siga o volume de mídia.</p>
+</div>
+
+<div class="ag" id="agenda">
+  <h3>Lembrete no Google Calendar</h3>
+  <div class="row"><a class="ytbtn" id="agLink" href="#" target="_blank" rel="noopener" hidden>Adicionar lembrete de hoje à agenda</a></div>
+  <p id="agStatus">Ao registrar o treino de hoje, aparece aqui um botão que abre o Google Calendar já com o evento "Treino X liberado" preenchido no dia em que as 48h fecham. É só confirmar.</p>
+</div>
+
+<div class="ag">
+  <h3>Backup</h3>
+  <div class="row"><button id="bkExport">Exportar histórico</button><button id="bkImport">Importar</button><input type="file" id="bkFile" accept="application/json" hidden></div>
+  <p>Os dados ficam só neste aparelho. Exporte de vez em quando; importe para trazer o histórico para outro celular.</p>
+</div>
+
+<div class="foot">
+  <span id="sync">Salvo neste aparelho</span>
+  <button id="reset">Limpar séries de hoje</button>
+</div>
+</div>
+
+<div id="viewHist" hidden>
+  <div class="stats">
+    <div class="stat"><b class="num cond"><span id="sWeek">0</span><small>/4</small></b><span>Esta semana</span></div>
+    <div class="stat"><b class="num cond" id="sMonth">0</b><span>Este mês</span></div>
+    <div class="stat"><b class="num cond" id="sTotal">0</b><span>Dias no total</span></div>
+  </div>
+  <div class="cal">
+    <div class="calh"><h2 class="cond" id="calTitle"></h2><div class="nav"><button id="calPrev" aria-label="Mês anterior">‹</button><button id="calNext" aria-label="Próximo mês">›</button></div></div>
+    <div class="grid" id="calGrid"></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>A · Superiores</span><span><i style="background:var(--b)"></i>B · Inferiores</span></div>
+    <div class="calnote">O dia entra no histórico ao marcar a primeira série. Toque em um dia para registrar manualmente: 1 toque = A, 2 toques = B, 3 toques = remove. O dia de hoje, com séries marcadas, só muda pela aba Treino.</div>
+  </div>
+  <div class="months">
+    <h2 class="cond">Por mês</h2>
+    <div id="monthList"></div>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+/* rest: seconds after the set (or after the pair, on the 2nd exercise). pair:true groups two exercises. */
+const PLANS={
+  A:{name:"A · Superiores",group:"Superiores",blocks:[
+    {k:"INÍCIO",t:"Aquecimento",sub:"≈ 4 min",items:[
+      {ex:[{id:"",n:"Halo com kettlebell",yt:"m9TFa2Q-Rog",sets:2,reps:"8 voltas por lado",rest:30,note:"Kettlebell de cabeça para baixo, círculo lento ao redor da cabeça. Peso leve."}]},
+      {ex:[{id:"",n:"Flexão lenta",yt:"TbVWMhyax2U",sets:1,reps:"10 reps",rest:30,note:"Depois, 1 série leve de barra fixa (metade das reps)."}]}]},
+    {k:"SUPERSÉRIES",t:"Empurrar & puxar",sub:"4 pares · 3 séries cada (D: 2) · descanso após o par",items:[
+      {pair:true,rest:90,ex:[{id:"A1",n:"Barra fixa aberta",yt:"MK9U7gKs-0E",sets:3,reps:"6–10 reps",load:true},{id:"A2",n:"Supino inclinado",yt:"oN48at2Zw7s",sets:3,reps:"8–12 reps",load:true}]},
+      {pair:true,rest:90,ex:[{id:"B1",n:"Remada na máquina",yt:"HWqKzW3Pg18",sets:3,reps:"8–12 reps",load:true},{id:"B2",n:"Desenvolvimento de ombros",yt:"eufDL9MmF8A",sets:3,reps:"8–12 reps",load:true}]},
+      {pair:true,rest:75,ex:[{id:"C1",n:"Paralelas",yt:"OPyI6B68tHw",sets:3,reps:"8–12 reps",note:"Passou de 12? Adiciona carga.",load:true},{id:"C2",n:"Bíceps alternado com halter",yt:"a8gOOUlM1QI",sets:3,reps:"10–12 reps",load:true}]},
+      {pair:true,rest:60,ex:[{id:"D1",n:"Tríceps na corda",yt:"qHY-nfXVX_s",sets:2,reps:"12–15 reps",load:true},{id:"D2",n:"Flexão de braços",yt:"TbVWMhyax2U",sets:2,reps:"até a falha"}]}]}
+  ]},
+  B:{name:"B · Inferiores",group:"Inferiores",blocks:[
+    {k:"INÍCIO",t:"Aquecimento",sub:"≈ 4 min",items:[
+      {ex:[{id:"",n:"Kettlebell Swing Russo",yt:"XytYquByZOo",sets:2,reps:"15 reps",rest:30,note:"Depois, 1 série leve de agachamento (50% da carga, 8 reps)."}]}]},
+    {k:"BLOCO A",t:"Força",sub:"descanso 120s / 90s",items:[
+      {ex:[{id:"A",n:"Agachamento livre com barra",yt:"rM6SDUdl9fs",sets:4,reps:"6–10 reps",rest:120,note:"Excêntrica de 2–3s.",load:true}]},
+      {ex:[{id:"B",n:"Hiperextensão 45° com anilha",yt:"6Bg5woPBEA8",sets:3,reps:"10–15 reps",rest:90,note:"Sem banco romano: leg press com pés altos, 3 × 10–12.",load:true}]}]},
+    {k:"BLOCO B",t:"Superséries",sub:"2 pares · 3 séries cada · descanso 60s após o par",items:[
+      {pair:true,rest:60,ex:[{id:"C1",n:"Cadeira flexora",yt:"E59lnzU_LE4",sets:3,reps:"10–12 reps",load:true},{id:"C2",n:"Panturrilha em pé",yt:"nEdfFM9ic_A",sets:3,reps:"12–15 reps",note:"Pico isométrico de 1s no topo.",load:true}]},
+      {pair:true,rest:60,ex:[{id:"D1",n:"Isometria na parede",yt:"owYDfv0h0b8",sets:3,reps:"45–60s"},{id:"D2",n:"Abdominal no banco declinado",yt:"zsoYzrB4iyE",sets:3,reps:"10–15 reps",note:"Desce abaixo da linha neutra. Anilha no peito quando passar de 15.",load:true}]}]}
+  ]}
+};
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,"0");
+const dkey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const today=()=>dkey(new Date());
+const MONTHS=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const fmt=k=>{const [y,m,d]=k.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"short"})};
+const addDays=(k,n)=>{const [y,m,d]=k.split("-").map(Number);return dkey(new Date(y,m-1,d+n))};
+function totalSets(t){let n=0;PLANS[t].blocks.forEach(b=>b.items.forEach(i=>i.ex.forEach(e=>n+=e.sets)));return n}
+
+/* state: {sessions:{date:{type,sets}}, loads:{ex:kg}, today:{date,type,done:{ex:[bool]}}, sound, vol, updated} */
+let S=loadLocal();
+S.sessions=S.sessions||{}; S.loads=S.loads||{}; if(S.sound===undefined)S.sound=true; if(!S.vol)S.vol=90; S.events=S.events||{}; if(S.agenda===undefined)S.agenda=true;
+if(!S.today||S.today.date!==today()||!S.today.done||!S.today.done.A) S.today={date:today(),type:suggestType(),done:{A:{},B:{}}};
+if(!S.today.type) S.today.type="A";
+const D=()=>S.today.done[S.today.type];
+const cnt=t=>Object.values(S.today.done[t]||{}).reduce((a,x)=>a+x.filter(Boolean).length,0);
+function recordToday(){const a=cnt("A"),b=cnt("B"); if(a||b)S.sessions[today()]={type:b>a?"B":"A",sets:Math.max(a,b)}; else delete S.sessions[today()];}
+function suggestType(){const ks=Object.keys(S.sessions||{}).sort();const last=ks.length?S.sessions[ks[ks.length-1]].type:null;return last==="A"?"B":"A"}
+const SEED={sessions:{"2026-09-09":{type:"F",sets:27}},loads:{"Cadeira flexora":"90"}};
+function loadLocal(){try{const v=localStorage.getItem("fb-v3"); return v?JSON.parse(v):JSON.parse(JSON.stringify(SEED));}catch(e){return{}}}
+function saveLocal(){try{localStorage.setItem("fb-v3",JSON.stringify(S))}catch(e){}}
+
+function persist(){ S.updated=Date.now(); saveLocal(); renderAgenda(); }
+
+/* render plan */
+function exHTML(e,pairRest,isSecond){
+  const dn=D()[e.n]||[]; const rest=isSecond?pairRest:(pairRest?0:e.rest);
+  return `<div class="ex" data-ex="${e.n}">
+    <div class="exh"><span class="id num">${e.id}</span><span class="n cond">${e.n}</span>${e.yt?`<a class="yt" href="https://youtu.be/${e.yt}" target="_blank" rel="noopener" aria-label="Vídeo de execução: ${e.n}">▶ vídeo</a>`:""}</div>
+    <div class="rx"><span><b class="num">${e.sets}×</b> ${e.reps}</span>${rest?`<span>descanso <b class="num">${rest}s</b></span>`:(pairRest?`<span>sem pausa → próximo</span>`:"")}</div>
+    ${e.note?`<div class="note">${e.note}</div>`:""}
+    <div class="sets">${Array.from({length:e.sets},(_,j)=>`<button class="set num${dn[j]?" on":""}" data-j="${j}" data-rest="${rest}" aria-pressed="${!!dn[j]}" aria-label="Série ${j+1}">${j+1}</button>`).join("")}
+    ${e.load?`<label class="load"><input type="number" inputmode="decimal" placeholder="—" value="${S.loads[e.n]||""}" data-load="${e.n}" aria-label="Carga em kg"> kg</label>`:""}
+    </div></div>`;
+}
+function renderPlan(){
+  const t=S.today.type, P=PLANS[t]; const total=totalSets(t);
+  $("#wA").setAttribute("aria-pressed",t==="A"); $("#wB").setAttribute("aria-pressed",t==="B");
+  $("#plan").innerHTML=P.blocks.map(b=>`<section class="block">
+    <div class="bhead"><span class="k cond">${b.k}</span><h2 class="cond">${b.t}</h2></div><div class="bsub">${b.sub}</div>
+    ${b.items.map(it=>it.pair?`<div class="pair"><div class="pl">Superset</div>${exHTML(it.ex[0],it.rest,false)}${exHTML(it.ex[1],it.rest,true)}</div>`:`<div class="single">${exHTML(it.ex[0],0,false)}</div>`).join("")}
+  </section>`).join("");
+  const done=cnt(t);
+  $("#pd").textContent=done; $("#pt").textContent=total; $("#pbar").style.width=(done/total*100)+"%";
+  $("#todayLbl").textContent="Hoje · "+new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"short"});
+  renderNext();
+  $("#sound").textContent="Som: "+(S.sound?"ligado":"desligado"); $("#sound").setAttribute("aria-pressed",S.sound);
+  $("#vol").value=S.vol; $("#volv").textContent=S.vol+"%";
+}
+function renderNext(){
+  const tk=today(); const el=$("#next"); const lines=[];
+  ["A","B"].forEach(t=>{ const past=Object.keys(S.sessions).filter(k=>k<tk&&S.sessions[k].type===t).sort();
+    const g=PLANS[t].group; if(!past.length){lines.push(`<span>${g}: <b>sem treino anterior</b></span>`);return;}
+    const last=past[past.length-1], free=addDays(last,2);
+    lines.push(`<span>${g}: último <b>${fmt(last)}</b> · ${free<=tk?"<b>liberado</b>":"liberado a partir de <b>"+fmt(free)+"</b>"}</span>`); });
+  el.innerHTML=lines.join("");
+}
+function setType(t){ if(t===S.today.type)return; S.today.type=t; persist(); renderAll(); }
+$("#wA").onclick=()=>setType("A"); $("#wB").onclick=()=>setType("B");
+
+$("#plan").addEventListener("click",e=>{ const b=e.target.closest(".set"); if(!b)return; unlockAudio(); wake();
+  const ex=b.closest(".ex").dataset.ex, j=+b.dataset.j; const arr=D()[ex]=D()[ex]||[]; arr[j]=!arr[j];
+  recordToday();
+  persist(); renderAll(); const r=+b.dataset.rest; if(arr[j]&&r>0)startTimer(r); });
+$("#plan").addEventListener("input",e=>{ if(e.target.matches("[data-load]")){S.loads[e.target.dataset.load]=e.target.value; persist();} });
+
+/* audio: 5 s stopwatch-style beeps */
+let actx=null, alarmNodes=[], tid=null, wl=null;
+function unlockAudio(){ try{ if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==="suspended")actx.resume(); }catch(e){} }
+function wake(){ try{ if(!wl&&navigator.wakeLock) navigator.wakeLock.request("screen").then(l=>{wl=l; l.addEventListener("release",()=>{wl=null})}).catch(()=>{}); }catch(e){} }
+function stopAlarm(){ alarmNodes.forEach(n=>{try{n.stop()}catch(e){}}); alarmNodes=[]; }
+function alarm(seconds){
+  if(!actx)return; stopAlarm(); const vol=S.vol/100, t0=actx.currentTime;
+  const comp=actx.createDynamicsCompressor(); comp.threshold.value=-10; comp.ratio.value=12; comp.connect(actx.destination);
+  const master=actx.createGain(); master.gain.value=vol; master.connect(comp);
+  const beeps=Math.round(seconds/0.5);
+  for(let i=0;i<beeps;i++){ const at=t0+i*0.5, dur=i%2===0?0.12:0.12;
+    [2093,2637].forEach(f=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type="square"; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,at); g.gain.linearRampToValueAtTime(1,at+0.005); g.gain.setValueAtTime(1,at+dur-0.01); g.gain.linearRampToValueAtTime(0.0001,at+dur);
+      o.connect(g); g.connect(master); o.start(at); o.stop(at+dur+0.02); alarmNodes.push(o); }); }
+}
+function startTimer(sec){
+  clearInterval(tid); stopAlarm(); const T=$("#timer"); T.classList.add("on"); T.classList.remove("done"); const end=Date.now()+sec*1000;
+  const tick=()=>{ const left=Math.ceil((end-Date.now())/1000); $("#tval").textContent=Math.max(left,0);
+    if(left<=0){ clearInterval(tid); T.classList.add("done"); $("#tlab").textContent="próxima série"; $("#tstop").textContent="OK";
+      if(S.sound)alarm(5); try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300,150,300,150,300])}catch(e){} } };
+  $("#tlab").textContent="descanso"; $("#tstop").textContent="Pular"; tick(); tid=setInterval(tick,250);
+}
+$("#tstop").onclick=()=>{clearInterval(tid); stopAlarm(); $("#timer").classList.remove("on","done")};
+$("#sound").onclick=()=>{S.sound=!S.sound; unlockAudio(); stopAlarm(); persist(); renderPlan();};
+$("#test").onclick=()=>{unlockAudio(); alarm(2);};
+$("#vol").addEventListener("input",e=>{S.vol=+e.target.value; $("#volv").textContent=S.vol+"%";});
+$("#vol").addEventListener("change",()=>{unlockAudio(); alarm(1); persist();});
+let resetArm=null;
+$("#reset").onclick=()=>{ const b=$("#reset"); if(!resetArm){ b.textContent="Toque de novo para confirmar"; resetArm=setTimeout(()=>{resetArm=null; b.textContent="Limpar séries de hoje";},3000); return; }
+  clearTimeout(resetArm); resetArm=null; b.textContent="Limpar séries de hoje"; S.today.done[S.today.type]={}; recordToday(); persist(); $("#tstop").click(); renderAll(); };
+
+/* Google Calendar via link (sem login) */
+function gcalDate(k,h){ const [y,m,d]=k.split("-").map(Number); const dt=new Date(y,m-1,d,h,0,0); return dt.toISOString().replace(/[-:]|\.\d{3}/g,""); }
+function renderAgenda(){ const tk=today(), s=S.sessions[tk], a=$("#agLink"), st=$("#agStatus");
+  if(!s||(s.type!=="A"&&s.type!=="B")){ a.hidden=true; st.textContent='Ao registrar o treino de hoje, aparece aqui um botão que abre o Google Calendar já com o evento "Treino X liberado" preenchido no dia em que as 48h fecham. É só confirmar.'; return; }
+  const g=PLANS[s.type].group, free=addDays(tk,2);
+  const p=new URLSearchParams({action:"TEMPLATE",text:`Academia · Treino ${s.type} (${g}) liberado`,dates:gcalDate(free,7)+"/"+gcalDate(free,7).replace(/T\d{6}/,m=>"T"+pad(+m.slice(1,3))+"1500"),details:`48h de descanso cumpridas para ${g.toLowerCase()}. Último treino ${s.type}: ${fmt(tk)}.`,trp:"false"});
+  a.href="https://calendar.google.com/calendar/render?"+p.toString(); a.hidden=false; a.textContent=`Adicionar "Treino ${s.type} liberado" em ${fmt(free)}`;
+  st.textContent="Abre o Google Calendar com o evento pronto às 07:00. Confirme lá; o alerta segue o padrão da sua agenda."; }
+
+/* backup */
+$("#bkExport").onclick=()=>{ const blob=new Blob([JSON.stringify(S,null,1)],{type:"application/json"}); const u=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=u; a.download="mafort-heavy-backup-"+today()+".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); };
+$("#bkImport").onclick=()=>$("#bkFile").click();
+$("#bkFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d||!d.sessions)throw 0;
+  S.sessions=Object.assign({},S.sessions,d.sessions); S.loads=Object.assign({},S.loads,d.loads||{}); persist(); renderAll(); $("#sync").textContent="Backup importado"; }catch(x){ $("#sync").textContent="Arquivo inválido"; } }; r.readAsText(f); e.target.value=""; });
+
+/* history */
+let calY,calM; {const d=new Date(); calY=d.getFullYear(); calM=d.getMonth();}
+function weekStart(d){const x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); x.setHours(0,0,0,0); return x;}
+function renderHist(){
+  const keys=Object.keys(S.sessions).sort(); const tk=today(), ws=dkey(weekStart(new Date())), mk=tk.slice(0,7);
+  $("#sWeek").textContent=keys.filter(k=>k>=ws&&k<=tk).length; $("#sMonth").textContent=keys.filter(k=>k.startsWith(mk)).length; $("#sTotal").textContent=keys.length;
+  $("#calTitle").textContent=MONTHS[calM]+" "+calY;
+  const off=(new Date(calY,calM,1).getDay()+6)%7, days=new Date(calY,calM+1,0).getDate();
+  let h=["S","T","Q","Q","S","S","D"].map(d=>`<div class="dow">${d}</div>`).join("");
+  for(let i=0;i<off;i++)h+=`<button class="day pad" tabindex="-1"></button>`;
+  for(let d=1;d<=days;d++){const k=calY+"-"+pad(calM+1)+"-"+pad(d); const s=S.sessions[k]; const cls=s?(s.type==="B"?"B":"A"):"";
+    h+=`<button class="day num ${cls}${k===tk?" today":""}${k>tk?" future":""}" data-day="${k}" ${k>tk?"disabled":""} aria-label="${k}${s?" treino "+s.type:""}">${d}</button>`;}
+  $("#calGrid").innerHTML=h;
+  const bym={}; keys.forEach(k=>{const m=k.slice(0,7); bym[m]=bym[m]||{A:0,B:0,n:0}; bym[m].n++; if(S.sessions[k].type==="B")bym[m].B++; else bym[m].A++;});
+  const ms=Object.keys(bym).sort().reverse();
+  $("#monthList").innerHTML=ms.length?ms.map(m=>{const [y,mo]=m.split("-"); const v=bym[m];
+    return `<div class="mrow"><span class="mn">${MONTHS[+mo-1].slice(0,3)} ${y}</span><span class="mb"><i style="width:${Math.min(100,v.A/18*100)}%;background:var(--accent)"></i><i style="width:${Math.min(100,v.B/18*100)}%;background:var(--b)"></i></span><span class="mv num">${v.n} ${v.n===1?"dia":"dias"} <small>${v.A}A · ${v.B}B</small></span></div>`}).join("")
+    :`<div class="empty">Nenhum treino registrado ainda. Marque a primeira série de hoje na aba Treino.</div>`;
+}
+$("#calGrid").addEventListener("click",e=>{ const b=e.target.closest("[data-day]"); if(!b||b.disabled)return; const k=b.dataset.day, s=S.sessions[k];
+  if(k===today()&&(cnt("A")||cnt("B")))return;
+  if(!s)S.sessions[k]={type:"A",sets:0,manual:true}; else if(s.type==="A")S.sessions[k]={type:"B",sets:0,manual:true}; else delete S.sessions[k];
+  persist(); renderAll(); });
+$("#calPrev").onclick=()=>{calM--; if(calM<0){calM=11;calY--;} renderHist();};
+$("#calNext").onclick=()=>{calM++; if(calM>11){calM=0;calY++;} renderHist();};
+
+function showTab(t){const tr=t==="treino"; $("#viewTreino").hidden=!tr; $("#viewHist").hidden=tr; $("#tabTreino").setAttribute("aria-selected",tr); $("#tabHist").setAttribute("aria-selected",!tr);}
+$("#tabTreino").onclick=()=>showTab("treino"); $("#tabHist").onclick=()=>showTab("hist");
+function renderAll(){renderPlan();renderHist();}
+renderAll();
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ wake(); if(S.today.date!==today()){S.today={date:today(),type:suggestType(),done:{A:{},B:{}}}; persist(); renderAll();} } });
+})();
+</script>
+</body>
+</html>
