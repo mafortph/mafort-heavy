@@ -1,0 +1,6 @@
+{
+  "appId": "com.mafort.heavy",
+  "appName": "Mafort Heavy",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
